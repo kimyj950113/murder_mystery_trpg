@@ -3,10 +3,10 @@ import streamlit as st
 from openai import OpenAI
 import json
 
+# OpenRouter용 OpenAI 클라이언트
 client = OpenAI(
-    api_key=st.secrets["OPENAI_API_KEY"],
-    organization=st.secrets.get("OPENAI_ORG_ID"),
-    project=st.secrets.get("OPENAI_PROJECT_ID")
+    api_key=st.secrets["OPENROUTER_API_KEY"],
+    base_url="https://openrouter.ai/api/v1"
 )
 
 def generate_scenario():
@@ -24,7 +24,7 @@ def generate_scenario():
     }
     '''
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="openrouter/gpt-4o",
         messages=[{"role": "user", "content": prompt}]
     )
     return json.loads(response.choices[0].message.content)
@@ -53,7 +53,7 @@ def generate_response(user_input, session_state):
     플레이어의 행동에 대해 서술적인 반응과 새로운 단서를 포함해 묘사해줘. 게임 마스터처럼 NPC/상황을 컨트롤하는 느낌으로.
     """
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="openrouter/gpt-4o",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
