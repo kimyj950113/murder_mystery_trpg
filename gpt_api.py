@@ -8,7 +8,8 @@ client = openai.OpenAI(
 )
 
 # 사용할 모델 ID (예: gpt-4 또는 gpt-3.5-turbo)
-MODEL_ID = "gpt-4"
+MODEL_ID = "gpt-3.5-turbo"
+
 
 def generate_scenario(theme):
     prompt = f"""
@@ -32,6 +33,7 @@ def generate_scenario(theme):
         messages=[{"role": "user", "content": prompt}]
     )
     return json.loads(response.choices[0].message.content)
+
 
 def generate_response(user_input, session_state):
     context = "\n".join(session_state.history[-6:])
@@ -62,6 +64,7 @@ def generate_response(user_input, session_state):
     )
     return response.choices[0].message.content.strip()
 
+
 def generate_interrogation_response(target, question, session_state):
     character_name = session_state.role["name"]
 
@@ -87,6 +90,7 @@ def generate_interrogation_response(target, question, session_state):
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
+
 
 def evaluate_guess(guess, session_state):
     culprit = session_state.scenario.get("culprit", "")
