@@ -1,19 +1,54 @@
-
-import random
+import openai
+import streamlit as st
 
 def generate_scenario():
-    # 단순 무작위 시나리오 생성 예시
-    return {
-        "setting": "당신은 한 외딴 저택에서 열린 파티에 참석했다. 다음 날 아침, 저택 주인이 살해된 채 발견되었다.",
-        "characters": [
-            {"name": "김탐정", "secret": "사건 전날 피해자와 격렬히 말다툼을 했다."},
-            {"name": "이하인", "secret": "피해자의 유산을 노리고 있었다."},
-            {"name": "박서기", "secret": "피해자에게 해고당할 위기에 처해 있었다."},
-            {"name": "최요리사", "secret": "피해자의 비밀을 알고 있었다."}
-        ]
+    # 간단한 GPT 기반 시나리오 생성
+    prompt = """
+    '랜덤 머더미스터리 시나리오를 JSON 형식으로 만들어줘. 
+    인물은 4명, 각각의 비밀을 포함해줘. 설정, 장소, 피해자도 포함해줘.'
+
+    형식 예시:
+    {
+      "setting": "...",
+      "characters": [
+        {"name": "...", "secret": "..."},
+        ...
+      ]
     }
+    """
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}],
+        api_key=st.secrets["OPENAI_API_KEY"]
+    )
+    return eval(response.choices[0].message.content)
 
 def generate_response(user_input, session_state):
-    # 간단한 응답 시뮬레이션 (GPT 대신 임시 반응)
-    character = session_state["role"]["name"]
-    return f"{character}은(는) 주변을 살펴보며 말했다: '{user_input}'... 음, 흥미롭군요.'"
+    context = "\n".join(session_state.history[-6:])
+    character_name = session_state.role["name"]
+
+    scenario_prompt = f"""
+    [시나리오 설정]
+    {session_state.scenario['setting']}
+
+    [당신의 역할]
+    {character_name} - {session_state.role['secret']}
+
+    [등장인물 목록]
+    {session_state.scenario['characters']}
+
+    [이전 대화 기록]
+    {context}
+
+    [플레이어의 입력]
+    {user_input}
+
+    [AI 응답]
+    플레이어의 행동에 대해 서술적인 반응과 새로운 단서를 포함해 묘사해줘. 게임 마스터처럼 NPC/상황을 컨트롤하는 느낌으로.
+    """
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": scenario_prompt}],
+        api_key=st.secrets["OPENAI_API_KEY"]
+    )
+    return response.choices[0].message.content.strip()
