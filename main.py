@@ -10,7 +10,7 @@ if "scenario" not in st.session_state:
 if "role" not in st.session_state:
     st.session_state.role = st.session_state.scenario["characters"][0]  # 임시 선택
 
-st.title("🕵️ 머더 미스터리: AI TRPG")
+st.title("🕵️ 머더 미스터리: AI TRPG (OpenRouter)")
 st.markdown(f"**당신의 역할:** {st.session_state.role['name']}")
 st.markdown("### 사건 현장")
 st.markdown(st.session_state.scenario["setting"])
