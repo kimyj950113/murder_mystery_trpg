@@ -2,14 +2,13 @@ import openai
 import streamlit as st
 import json
 
-# OpenRouter 전용 OpenAI 클라이언트 설정
+# OpenAI 공식 API 클라이언트 설정
 client = openai.OpenAI(
-    api_key=st.secrets["OPENROUTER_API_KEY"],
-    base_url="https://openrouter.ai/api/v1"
+    api_key=st.secrets["OPENAI_API_KEY"]
 )
 
-# OpenRouter 지원 모델 중 유효한 모델 ID 사용 (예: openrouter/gpt-3.5-turbo)
-MODEL_ID = "openai/gpt-4o"
+# 사용할 모델 ID (예: gpt-4 또는 gpt-3.5-turbo)
+MODEL_ID = "gpt-4"
 
 def generate_scenario(theme):
     prompt = f"""
