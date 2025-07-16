@@ -20,7 +20,7 @@ def generate_scenario():
     }
     """
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}]
     )
     return json.loads(response.choices[0].message.content)
@@ -50,7 +50,7 @@ def generate_response(user_input, session_state):
     """
 
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": scenario_prompt}]
     )
     return response.choices[0].message.content.strip()
