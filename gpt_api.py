@@ -22,7 +22,7 @@ def generate_scenario(theme):
     }}
     """
     response = client.chat.completions.create(
-        model="openrouter/gpt-4o",
+        model="openai/gpt-4o",
         messages=[{"role": "user", "content": prompt}]
     )
     return json.loads(response.choices[0].message.content)
@@ -41,7 +41,7 @@ def generate_response(user_input, session_state):
     [AI 응답]: 플레이어 행동에 대한 결과를 서술해줘. 단서나 상황 전개를 포함해줘.
     """
     response = client.chat.completions.create(
-        model="openrouter/gpt-4o",
+        model="openai/gpt-4o",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
@@ -56,7 +56,7 @@ def generate_interrogation_response(target, question, session_state):
     대상 인물이 비밀을 바로 드러내지 않도록 말투와 태도를 조절해 응답해줘.
     """
     response = client.chat.completions.create(
-        model="openrouter/gpt-4o",
+        model="openai/gpt-4o",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
@@ -70,7 +70,7 @@ def evaluate_guess(guess, session_state):
     누가 진범인지, 트릭은 무엇인지, 왜 살인을 저질렀는지 명확히 설명해줘.
     """
     response = client.chat.completions.create(
-        model="openrouter/gpt-4o",
+        model="openai/gpt-4o",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
