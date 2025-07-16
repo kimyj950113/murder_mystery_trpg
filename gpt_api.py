@@ -8,6 +8,9 @@ client = openai.OpenAI(
     base_url="https://openrouter.ai/api/v1"
 )
 
+# OpenRouter 지원 모델 중 유효한 모델 ID 사용 (예: openrouter/gpt-3.5-turbo)
+MODEL_ID = "openrouter/gpt-3.5-turbo"
+
 def generate_scenario(theme):
     prompt = f"""
     아래 조건을 반영한 머더 미스터리 시나리오를 JSON 형식으로 생성해줘:
@@ -26,7 +29,7 @@ def generate_scenario(theme):
     }}
     """
     response = client.chat.completions.create(
-        model="mistralai/mixtral-8x7b",
+        model=MODEL_ID,
         messages=[{"role": "user", "content": prompt}]
     )
     return json.loads(response.choices[0].message.content)
@@ -34,7 +37,7 @@ def generate_scenario(theme):
 def generate_response(user_input, session_state):
     context = "\n".join(session_state.history[-6:])
     character_name = session_state.role["name"]
-    
+
     prompt = f"""
     [시나리오 설정]
     {session_state.scenario['setting']}
@@ -55,14 +58,14 @@ def generate_response(user_input, session_state):
     플레이어의 행동에 대해 서술적인 반응과 새로운 단서를 포함해 묘사해줘. 반드시 한국어로 응답해줘.
     """
     response = client.chat.completions.create(
-        model="mistralai/mixtral-8x7b",
+        model=MODEL_ID,
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
 
 def generate_interrogation_response(target, question, session_state):
     character_name = session_state.role["name"]
-    
+
     prompt = f"""
     [시나리오 설정]
     {session_state.scenario['setting']}
@@ -81,7 +84,7 @@ def generate_interrogation_response(target, question, session_state):
     반드시 한국어로 해당 인물이 대답하도록 구성하고, 캐릭터의 비밀이나 단서를 일부 드러내도 좋아. 다만 모든 진실을 바로 말하지는 마. 추리의 여지를 남겨줘.
     """
     response = client.chat.completions.create(
-        model="mistralai/mixtral-8x7b",
+        model=MODEL_ID,
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
