@@ -1,16 +1,20 @@
-from openai import OpenAI
+
 import streamlit as st
+from openai import OpenAI
 import json
 
-# OpenAI 클라이언트 객체 생성
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+client = OpenAI(
+    api_key=st.secrets["OPENAI_API_KEY"],
+    organization=st.secrets.get("OPENAI_ORG_ID"),
+    project=st.secrets.get("OPENAI_PROJECT_ID")
+)
 
 def generate_scenario():
-    prompt = """
-    '랜덤 머더미스터리 시나리오를 JSON 형식으로 만들어줘. 
-    인물은 4명, 각각의 비밀을 포함해줘. 설정, 장소, 피해자도 포함해줘.'
+    prompt = '''
+    랜덤 머더미스터리 시나리오를 JSON 형식으로 만들어줘. 
+    인물은 4명, 각각의 비밀을 포함해줘. 설정, 장소, 피해자도 포함해줘.
 
-    형식 예시:
+    예시:
     {
       "setting": "...",
       "characters": [
@@ -18,9 +22,9 @@ def generate_scenario():
         ...
       ]
     }
-    """
+    '''
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4o",
         messages=[{"role": "user", "content": prompt}]
     )
     return json.loads(response.choices[0].message.content)
@@ -29,7 +33,7 @@ def generate_response(user_input, session_state):
     context = "\n".join(session_state.history[-6:])
     character_name = session_state.role["name"]
 
-    scenario_prompt = f"""
+    prompt = f"""
     [시나리오 설정]
     {session_state.scenario['setting']}
 
@@ -48,9 +52,8 @@ def generate_response(user_input, session_state):
     [AI 응답]
     플레이어의 행동에 대해 서술적인 반응과 새로운 단서를 포함해 묘사해줘. 게임 마스터처럼 NPC/상황을 컨트롤하는 느낌으로.
     """
-
     response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": scenario_prompt}]
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content.strip()
