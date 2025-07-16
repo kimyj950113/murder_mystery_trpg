@@ -2,7 +2,7 @@ import streamlit as st
 from openai import OpenAI
 import json
 
-# OpenRouter API 클라이언트
+# OpenRouter API 클라이언트 설정
 client = OpenAI(
     api_key=st.secrets["OPENROUTER_API_KEY"],
     base_url="https://openrouter.ai/api/v1"
@@ -14,7 +14,8 @@ def generate_scenario():
 - 등장인물은 4명 (각각 이름과 비밀 포함)
 - 설정(setting): 사건 장소와 배경
 - 피해자도 반드시 포함
-예시 형식:
+
+예시:
 {
   "setting": "...",
   "characters": [
@@ -26,7 +27,8 @@ def generate_scenario():
 """
     response = client.chat.completions.create(
         model="openai/gpt-4o",
-        messages=[{"role": "user", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=1024  # ✅ 무료 한도 대응
     )
     return json.loads(response.choices[0].message.content)
 
@@ -56,6 +58,7 @@ def generate_response(user_input, session_state):
 """
     response = client.chat.completions.create(
         model="openai/gpt-4o",
-        messages=[{"role": "user", "content": scenario_prompt}]
+        messages=[{"role": "user", "content": scenario_prompt}],
+        max_tokens=1024  # ✅ 응답 길이 제한
     )
     return response.choices[0].message.content.strip()
