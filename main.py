@@ -25,4 +25,4 @@ if st.button("제출") and user_input:
     response = generate_response(user_input, st.session_state)
     st.session_state.history.append(f"🧑‍💼 너: {user_input}")
     st.session_state.history.append(f"🤖 AI: {response}")
-    st.experimental_rerun()
+    st.rerun()
