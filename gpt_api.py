@@ -9,7 +9,7 @@ client = openai.OpenAI(
 )
 
 # OpenRouter 지원 모델 중 유효한 모델 ID 사용 (예: openrouter/gpt-3.5-turbo)
-MODEL_ID = "openrouter/gpt-3.5-turbo"
+MODEL_ID = "openai/gpt-3.5-turbo"
 
 def generate_scenario(theme):
     prompt = f"""
