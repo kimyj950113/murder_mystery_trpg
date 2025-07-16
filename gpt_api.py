@@ -1,22 +1,23 @@
 # gpt_api.py
+from openai import OpenAI
 import streamlit as st
 import json
-import openai
 
-# OpenRouter용 OpenAI client 설정
-client = openai.OpenAI(
+# OpenRouter 전용 클라이언트 설정
+client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=st.secrets["OPENROUTER_API_KEY"]
 )
 
-def generate_scenario(theme):
+def generate_scenario(theme="무작위"):
     prompt = f"""
-    '{theme}' 테마의 랜덤 머더미스터리 시나리오를 JSON 형식으로 만들어줘. 
-    인물은 4명, 각각의 비밀을 포함해줘. 설정, 장소, 피해자도 포함해줘.
+    아래 형식에 따라 랜덤 머더미스터리 시나리오를 만들어줘. 인물은 4명이며, 각 인물은 서로 다른 비밀을 갖고 있어야 해. 
+    주제는 "{theme}"이고 장소, 피해자 정보도 포함해줘. 결과는 반드시 JSON으로 반환해.
 
     형식 예시:
     {{
       "setting": "...",
+      "victim": "...",
       "characters": [
         {{"name": "...", "secret": "..."}},
         ...
@@ -24,19 +25,21 @@ def generate_scenario(theme):
     }}
     """
     response = client.chat.completions.create(
-        model="openai/gpt-4o",
+        model="mistralai/mixtral-8x7b-instruct",
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=2048  # 무료 사용자 허용량 고려
+        max_tokens=1000  # 제한 설정
     )
     return json.loads(response.choices[0].message.content)
 
 def generate_response(user_input, session_state):
     context = "\n".join(session_state.history[-6:])
     character_name = session_state.role["name"]
-
     scenario_prompt = f"""
     [시나리오 설정]
     {session_state.scenario['setting']}
+
+    [피해자]
+    {session_state.scenario.get('victim', '')}
 
     [당신의 역할]
     {character_name} - {session_state.role['secret']}
@@ -51,41 +54,43 @@ def generate_response(user_input, session_state):
     {user_input}
 
     [AI 응답]
-    플레이어의 행동에 대해 서술적인 반응과 새로운 단서를 포함해 묘사해줘. 게임 마스터처럼 NPC/상황을 컨트롤하는 느낌으로.
+    플레이어의 행동에 대해 상황을 서술적으로 묘사하고, 조사 결과나 NPC의 반응을 포함해줘.
     """
     response = client.chat.completions.create(
-        model="openai/gpt-4o",
+        model="mistralai/mixtral-8x7b-instruct",
         messages=[{"role": "user", "content": scenario_prompt}],
-        max_tokens=2048
+        max_tokens=1000
     )
     return response.choices[0].message.content.strip()
 
 def generate_interrogation_response(target, question, session_state):
-    character_name = session_state.role["name"]
+    scenario = session_state.scenario
     context = "\n".join(session_state.history[-6:])
-    prompt = f"""
+    interrogation_prompt = f"""
     [시나리오 설정]
-    {session_state.scenario['setting']}
+    {scenario['setting']}
 
-    [당신의 역할]
-    {character_name} - {session_state.role['secret']}
+    [피해자]
+    {scenario.get('victim', '')}
 
-    [상대 캐릭터]
+    [플레이어 캐릭터]
+    {session_state.character} - {session_state.role['secret']}
+
+    [대상 캐릭터]
     {target}
 
-    [질문]
+    [플레이어의 질문]
     {question}
 
-    [이전 대화]
+    [최근 대화 기록]
     {context}
 
-    [AI 응답]
-    {target}이 플레이어의 질문에 대해 수상하게 혹은 단서를 흘릴 수 있도록 반응하게 해줘.
+    대상 캐릭터의 입장에서 자연스럽고 의심스러운 답변을 해줘. 그의 비밀을 완전히 드러내지 않도록 하되, 단서를 조금 흘릴 수 있어.
     """
     response = client.chat.completions.create(
-        model="openai/gpt-4o",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=2048
+        model="mistralai/mixtral-8x7b-instruct",
+        messages=[{"role": "user", "content": interrogation_prompt}],
+        max_tokens=1000
     )
     return response.choices[0].message.content.strip()
 
@@ -94,17 +99,17 @@ def evaluate_guess(guess, session_state):
     [시나리오 설정]
     {session_state.scenario['setting']}
 
-    [캐릭터 정보]
+    [등장인물]
     {session_state.scenario['characters']}
 
-    [플레이어가 지목한 인물]
-    {guess}
+    [플레이어 추리]
+    범인으로 지목된 사람: {guess}
 
-    이 인물이 진짜 범인인지 판정하고, 이유를 설명해줘. 실제 범인을 알려주고 정답 여부를 명확히 판단해줘.
+    위 정보를 바탕으로, 플레이어의 추리가 정답인지 "맞았습니다" 또는 "틀렸습니다" 중 하나로만 답해주세요.
     """
     response = client.chat.completions.create(
-        model="openai/gpt-4o",
+        model="mistralai/mixtral-8x7b-instruct",
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=2048
+        max_tokens=500
     )
     return response.choices[0].message.content.strip()
