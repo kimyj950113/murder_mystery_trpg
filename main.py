@@ -21,6 +21,8 @@ def init_session():
         st.session_state.clues = []
     if "phase" not in st.session_state:
         st.session_state.phase = "play"  # play / interrogate / guess / end
+    if "last_interrogation" not in st.session_state:
+        st.session_state.last_interrogation = ""
 
 init_session()
 st.title("머더 미스터리 TRPG: AI 게임 마스터")
@@ -94,11 +96,17 @@ else:
         others = [c["name"] for c in st.session_state.scenario["characters"] if c["name"] != st.session_state.character]
         target = st.selectbox("누구를 추궁할까요?", others)
         question = st.text_input("무엇을 질문하시겠습니까?", key="interrogate_input")
-        if st.button("추궁하기"):
+
+        if st.button("추궁하기") and question:
             reply = generate_interrogation_response(target, question, st.session_state)
             st.session_state.history.append(f"🧑‍💼 {target}에게: {question}")
             st.session_state.history.append(f"🎭 {target}: {reply}")
-            st.rerun()
+            st.session_state.last_interrogation = f"🎭 {target}: {reply}"
+
+        if st.session_state.last_interrogation:
+            st.markdown("**응답 내용:**")
+            st.markdown(st.session_state.last_interrogation)
+
         st.markdown("---")
         if st.button("범인 추리 단계로 이동"):
             st.session_state.phase = "guess"
