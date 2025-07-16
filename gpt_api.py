@@ -1,8 +1,11 @@
-import openai
+from openai import OpenAI
 import streamlit as st
+import json
+
+# OpenAI 클라이언트 객체 생성
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 def generate_scenario():
-    # 간단한 GPT 기반 시나리오 생성
     prompt = """
     '랜덤 머더미스터리 시나리오를 JSON 형식으로 만들어줘. 
     인물은 4명, 각각의 비밀을 포함해줘. 설정, 장소, 피해자도 포함해줘.'
@@ -16,12 +19,11 @@ def generate_scenario():
       ]
     }
     """
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": prompt}],
-        api_key=st.secrets["OPENAI_API_KEY"]
+        messages=[{"role": "user", "content": prompt}]
     )
-    return eval(response.choices[0].message.content)
+    return json.loads(response.choices[0].message.content)
 
 def generate_response(user_input, session_state):
     context = "\n".join(session_state.history[-6:])
@@ -46,9 +48,9 @@ def generate_response(user_input, session_state):
     [AI 응답]
     플레이어의 행동에 대해 서술적인 반응과 새로운 단서를 포함해 묘사해줘. 게임 마스터처럼 NPC/상황을 컨트롤하는 느낌으로.
     """
-    response = openai.ChatCompletion.create(
+
+    response = client.chat.completions.create(
         model="gpt-4",
-        messages=[{"role": "user", "content": scenario_prompt}],
-        api_key=st.secrets["OPENAI_API_KEY"]
+        messages=[{"role": "user", "content": scenario_prompt}]
     )
     return response.choices[0].message.content.strip()
